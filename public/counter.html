@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head>
+<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Counter 櫃位</title><link rel="stylesheet" href="css/style.css">
 </head><body>
@@ -52,7 +52,7 @@ onState(s => {
     called.map(t => `<span class="called-chip${String(t.counter)===String(cid)?' cur':''}">${t.label}</span>`).join('')
     || '<span class="muted">No one 暫無</span>';
 
-  /* 暫停按鈕狀態更新 */
+  /* 暫停按鈕狀態更新 Pause button state update */
   const paused = isCounterPaused(cid);
   const btnP = $('btnPause');
   if (paused) {
@@ -71,11 +71,11 @@ $('btnRecall').onclick = async () => { const t = currentOf(cid); if (!t) return 
 $('btnComplete').onclick = async () => { const t = currentOf(cid); if (!t) return toast('No active ticket 無服務中籌號'); await completeTicket(t.key); toast('Completed 已完成 ' + t.label); };
 $('btnUndo').onclick = async () => {
   const t = await undoCall(cid);
-  toast(t ? 'Undone 已撤回 ' + t.label + '（返回等候）' : 'Nothing to undo 無可撤回');
+  toast(t ? 'Undone 已撤回 ' + t.label + '（返回等候 Returned to queue）' : 'Nothing to undo 無可撤回');
 };
 $('btnStop').onclick = async () => { await stopCall(cid); toast('Stopped 已停止本櫃位廣播'); };
 
-/* 暫停/恢復服務 */
+/* 暫停／恢復服務 Pause / resume service */
 $('btnPause').onclick = async () => {
   if (isCounterPaused(cid)) {
     await resumeCounter(cid);
@@ -100,7 +100,7 @@ $('keypad').onclick = e => {
 $('btnGo').onclick = async () => {
   const v = $('numInput').value.trim(); if (!v) return;
   const t = await callNumber(cid, v);
-  toast(t ? 'Called 已叫 ' + t.label : 'Not found 搵唔到該籌號');
+  toast(t ? 'Called 已叫 ' + t.label : 'Not found 找不到該籌號');
   if (t){ $('numInput').value = ''; $('keypadCard').style.display = 'none'; }
 };
 </script>
