@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head>
+<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Display 大屏幕</title><link rel="stylesheet" href="css/style.css">
+<title>Display 顯示屏</title><link rel="stylesheet" href="css/style.css">
 </head><body>
 <div class="display-wrap">
   <div class="display-header">
@@ -13,7 +13,6 @@
     <div class="queue-items" id="queueItems"></div>
   </div>
 </div>
-<button id="startTts">START SOUND 開啟廣播聲音</button>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="js/config.js"></script><script src="js/common.js"></script><script src="js/tts.js"></script>
@@ -34,10 +33,10 @@ onState(s => {
   const lc = s.lastCall;
   if (lc){
     const c = counterById(lc.counter);
-    document.getElementById('ticker').textContent = `Now Calling ${lc.ticket.label} → ${c.name} · 請 ${lc.ticket.label} 到${c.nameZh}`;
+    document.getElementById('ticker').textContent = `Now Calling 現正呼叫 ${lc.ticket.label} → ${c.name} ${c.nameZh} · 請 ${lc.ticket.label} 到${c.nameZh}`;
   }
 
-  /* 撤回信號 */
+  /* 撤回信號 Undo signal */
   const lu = s.lastUndo;
   if (lu && lu.seq !== lastUndoSeq){
     lastUndoSeq = lu.seq;
@@ -51,7 +50,7 @@ onState(s => {
     }
   }
 
-  /* 停止信號（'*' = 全部停止） */
+  /* 停止信號（'*' = 全部停止） Stop signal ('*' = stop all) */
   const ls = s.lastStop;
   if (ls && ls.seq !== lastStopSeq){
     lastStopSeq = ls.seq;
@@ -90,7 +89,7 @@ function renderGrid(s){
     const active = flashId != null && Number(id) === Number(flashId) && now < flashUntil;
     const num = String(c.name || '').replace(/\D/g,'') || String(id);
 
-    /* 暫停服務判斷 */
+    /* 暫停服務判斷 Pause check */
     const paused = s.counters && s.counters[id] && s.counters[id].paused;
         const numHtml = paused
       ? '<span class="paused-txt">Suspended<small>暫停服務</small></span>'
@@ -132,6 +131,7 @@ document.getElementById('startTts').onclick = () => {
   document.getElementById('startTts').style.display = 'none';
 };
 
+/* 垂直自動滾動 Vertical auto-scroll */
 function autoScrollV(el, step, interval, holdMs){
   step = step || 2; interval = interval || 40; holdMs = holdMs || 2000;
   if (!el) return;
@@ -145,6 +145,7 @@ function autoScrollV(el, step, interval, holdMs){
     } else { el.scrollTop += step; }
   }, interval);
 }
+/* 水平自動滾動 Horizontal auto-scroll */
 function autoScrollH(el, step, interval, holdMs){
   step = step || 2; interval = interval || 40; holdMs = holdMs || 2000;
   if (!el) return;
