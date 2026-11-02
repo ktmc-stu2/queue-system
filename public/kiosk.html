@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head>
+<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kiosk 取號</title><link rel="stylesheet" href="css/style.css">
 <style>
@@ -46,33 +46,33 @@
   </div>
   <button id="takeBtn">TAKE A TICKET<br>取 號</button>
   <div class="k-stats">
-    <div class="k-stat"><small>Waiting 等候中</small><span id="statWait">0</span> 人</div>
-    <div class="k-stat"><small>Est. wait 預計等候</small><span id="statEst">—</span></div>
+    <div class="k-stat"><small>Waiting 等候中（人數 Persons）</small><span id="statWait">0</span></div>
+    <div class="k-stat"><small>Est. wait 預計等候（分鐘 Minutes）</small><span id="statEst">—</span></div>
   </div>
   <div class="row" style="justify-content:center">
-    <button id="btnReprint" class="btn-gray">REPRINT<br><span class="hk">重印小票</span></button>
+    <button id="btnReprint" class="btn-gray">REPRINT<br><span class="hk">重印憑條</span></button>
     <button id="btnPaper" class="btn-gray">PAPER<br><span class="hk">紙張設定</span></button>
   </div>
   <div class="k-note" id="note"></div>
 </div>
 
 <div class="kiosk-wrap" id="ticketView" style="display:none">
-  <div class="k-hero-title">Your Ticket 你的籌號</div>
+  <div class="k-hero-title">Your Ticket 您的籌號</div>
   <div class="k-ticket-card">
     <div class="t-label">TICKET 籌號</div>
     <div class="t-num" id="tvNum">A001</div>
     <div class="t-meta" id="tvMeta"></div>
   </div>
   <div class="k-stats">
-    <div class="k-stat"><small>Ahead 你前面</small><span id="tvAhead">0</span> 人</div>
-    <div class="k-stat"><small>Est. wait 預計等候</small><span id="tvEst">—</span></div>
+    <div class="k-stat"><small>Ahead 前方人數 Persons</small><span id="tvAhead">0</span></div>
+    <div class="k-stat"><small>Est. wait 預計等候（分鐘 Minutes）</small><span id="tvEst">—</span></div>
   </div>
-  <div class="k-note">Please keep this ticket and watch for the display announcement. 請保留此籌號，並留意大屏幕廣播。</div>
+  <div class="k-note">Please keep this ticket and watch for the display announcement. 請保留此籌號，並留意顯示屏廣播。</div>
   <div class="k-back" id="backCount"></div>
 </div>
 
 <div class="kiosk-wrap" id="reprintView" style="display:none">
-  <div class="k-hero-title">Reprint 重印小票</div>
+  <div class="k-hero-title">Reprint 重印憑條</div>
   <div class="card" id="rpLock" style="max-width:380px; width:100%; text-align:center">
     <p class="muted" style="margin-bottom:10px">Admin password required 需要管理員密碼</p>
     <input type="password" id="rpPw" placeholder="Password 密碼">
@@ -83,7 +83,7 @@
     <p id="rpErr" style="color:#dc2626; font-weight:600; margin-top:8px"></p>
   </div>
   <div class="card" id="rpList" style="display:none; max-width:760px; width:100%; max-height:62vh; overflow:auto; text-align:left">
-    <h3 style="border:none; padding:0; margin-bottom:10px">Choose ticket 選擇要重印嘅籌號</h3>
+    <h3 style="border:none; padding:0; margin-bottom:10px">Choose ticket 選擇要重印的籌號</h3>
     <div id="rpItems" style="display:flex; flex-wrap:wrap; gap:8px"></div>
     <div class="row" style="margin-top:14px"><button id="rpBack2" class="btn-gray">Back 返回</button></div>
   </div>
@@ -124,10 +124,11 @@
 <script src="js/config.js"></script><script src="js/common.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-const ADMIN_PW = 'ktmc2026';   // ← 與 admin 相同密碼
+const ADMIN_PW = 'ktmc2026';   // ← 與管理頁相同密碼 Same password as the admin page
 let busy = false, backTimer = null, takenNo = null, shownAt = 0, rpTicket = null;
 
-/* 點擊／觸碰任何位置 → 返回首頁（只限取號票畫面） */
+/* 點擊／觸碰任何位置 → 返回首頁（僅限取號票畫面）
+   Tap anywhere → return to home (ticket view only) */
 document.addEventListener('pointerdown', () => {
   if (takenNo != null && Date.now() - shownAt > 1500) goHome();
 });
@@ -144,15 +145,15 @@ onState(s => {
   const counters = (s.settings.counters || []).length || 1;
   const avg = s.settings.avgMinutes || 3;
   $('statWait').textContent = w.length;
-  $('statEst').textContent = Math.ceil(w.length * avg / counters) + ' min';
+  $('statEst').textContent = Math.ceil(w.length * avg / counters);
   if (takenNo != null){
     const ahead = w.filter(t => t.no < takenNo).length;
     $('tvAhead').textContent = ahead;
-    $('tvEst').textContent = Math.ceil(ahead * avg / counters) + ' min';
+    $('tvEst').textContent = Math.ceil(ahead * avg / counters);
   }
 });
 
-/* ===== 小票模板 ===== */
+/* ===== 憑條模板 Ticket template ===== */
 function ticketHTML(t, reprint){
   return `
     ${reprint ? '<div class="t-reprint">Reprinted 重新列印</div>' : ''}
@@ -172,16 +173,16 @@ function ticketHTML(t, reprint){
       <div class="t-row">時段 Session: ${STATE.session.prefix}</div>
     </div>
     <div class="t-note">
-      請妥善保管此籌號，並留意屏幕及廣播。<br>
+      請妥善保管此籌號，並留意顯示屏及廣播。<br>
       Please keep this ticket and wait for your turn.<br>
-      若連續叫號3次後仍未到場，籌號將作廢。
+      若連續叫號3次後仍未到場，籌號將作廢。<br>
       Your ticket will be canceled after three missed calls.<br>
       如不慎過號，請重新取號輪候。<br>
       Please get a new ticket if you missed your turn.
     </div>`;
 }
 
-/* 按紙張設定打印 */
+/* 按紙張設定列印 Print according to the paper setting */
 function setPrint(t, reprint){
   const pa = $('printArea');
   pa.className = (STATE.settings.paper === '58') ? 'p58' : '';
@@ -189,7 +190,7 @@ function setPrint(t, reprint){
   setTimeout(() => window.print(), 300);
 }
 
-/* ===== 取號 ===== */
+/* ===== 取號 Take a ticket ===== */
 $('takeBtn').onclick = async () => {
   if (busy) return; busy = true;
   const t = await takeTicket();
@@ -197,18 +198,18 @@ $('takeBtn').onclick = async () => {
   shownAt = Date.now();
 
   $('tvNum').textContent = t.label;
-  $('tvMeta').textContent = `Session ${STATE.session.prefix} · ${t.time}`;
+  $('tvMeta').textContent = `時段 Session ${STATE.session.prefix} · ${t.time}`;
   $('homeView').style.display = 'none';
   $('ticketView').style.display = 'flex';
 
   setPrint(t, false);
 
   let sec = 10;
-  $('backCount').textContent = `Tap anywhere to return 點擊任意位置返回 · ${sec}s`;
+  $('backCount').textContent = `Tap anywhere to return 點擊任何位置返回 · ${sec} 秒 s`;
   clearInterval(backTimer);
   backTimer = setInterval(() => {
     sec--;
-    $('backCount').textContent = `Tap anywhere to return 點擊任意位置返回 · ${sec}s`;
+    $('backCount').textContent = `Tap anywhere to return 點擊任何位置返回 · ${sec} 秒 s`;
     if (sec <= 0) goHome();
   }, 1000);
   busy = false;
@@ -223,7 +224,7 @@ function goHome(){
   $('homeView').style.display = 'flex';
 }
 
-/* ===== 紙張設定 ===== */
+/* ===== 紙張設定 Paper setting ===== */
 $('btnPaper').onclick = () => {
   $('homeView').style.display = 'none';
   $('paperView').style.display = 'flex';
@@ -246,7 +247,7 @@ $('ppPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('ppUnlock'
 $('pp80').onclick = async () => { await saveSettings({ ...STATE.settings, paper:'80' }); toast('Paper 80mm saved 已儲存'); };
 $('pp58').onclick = async () => { await saveSettings({ ...STATE.settings, paper:'58' }); toast('Paper 58mm saved 已儲存'); };
 
-/* ===== 重印 ===== */
+/* ===== 重印 Reprint ===== */
 $('btnReprint').onclick = () => {
   $('homeView').style.display = 'none';
   $('reprintView').style.display = 'flex';
@@ -280,7 +281,7 @@ function renderRpList(){
   ).join('') || '<p class="muted">No tickets 暫無籌號</p>';
 }
 
-/* 揀號碼 → 預覽 */
+/* 選擇號碼 → 預覽 Select a number → preview */
 $('rpItems').onclick = e => {
   const k = e.target.dataset.k; if (!k) return;
   const t = ticketsArr().find(x => x.key === k); if (!t) return;
@@ -300,7 +301,7 @@ $('rpItems').onclick = e => {
   $('rpPreview').style.display = 'block';
 };
 
-/* 確定先列印 */
+/* 確認後列印 Print after confirmation */
 $('rpPrint').onclick = () => {
   if (!rpTicket) return;
   setPrint(rpTicket, true);
