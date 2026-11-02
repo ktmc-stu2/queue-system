@@ -1,4 +1,5 @@
-/* 音檔優先 → 缺檔時 Google TTS → Chrome 兜底 */
+/* 音檔優先 → 檔案缺失時改用 Google TTS → Chrome 語音後備
+   Audio files first → Google TTS when missing → Chrome speech fallback */
 const AUDIO_EXT = '.mp3';
 let currentAudio = null, currentResolve = null, announceToken = 0;
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -26,7 +27,8 @@ function ttsInfoFor(path){
   return w ? { text: w, lang: TTS_LANG[lang] } : null;
 }
 
-/* ===== Google Translate TTS（audio 直播，免 CORS） ===== */
+/* ===== Google Translate TTS（直接串流音檔，無需 CORS）
+   Google Translate TTS (direct audio streaming, no CORS required) ===== */
 function googleSpeak(text, langCode) {
   return new Promise(res => {
     const my = announceToken;
@@ -49,7 +51,7 @@ function googleSpeak(text, langCode) {
   });
 }
 
-/* ===== Chrome 語音兜底 ===== */
+/* ===== Chrome 語音後備 Chrome speech fallback ===== */
 const VOICE_PREF = ['Google','HiuGaai','Xiaoxiao','Aria','Online (Natural)','Neural','Natural'];
 function browserSpeak(text, langCode) {
   return new Promise(res => {
@@ -66,7 +68,7 @@ function browserSpeak(text, langCode) {
     if (!v) v = vs.find(x => x.lang.toLowerCase().replace('-','_') === langCode.toLowerCase().replace('-','_'));
     if (!v) v = vs.find(x => x.lang.toLowerCase().startsWith(lang2));
     if (v) u.voice = v;
-    console.warn('[TTS] Chrome 兜底：', (v && v.name) || 'default', text);
+    console.warn('[TTS] Chrome 後備 fallback：', (v && v.name) || 'default', text);
     u.onend = () => res(); u.onerror = () => res();
     speechSynthesis.speak(u);
   });
@@ -79,7 +81,8 @@ async function speakText(text, langCode){
   if (!ok && announceToken === my) await browserSpeak(text, langCode);
 }
 
-/* ===== 播放 clip：有音檔播音檔；缺檔先至 TTS ===== */
+/* ===== 播放片段：有音檔則播放音檔；檔案缺失時改用 TTS
+   Play clip: play the audio file if present; fall back to TTS when missing ===== */
 function playClip(path){
   const my = announceToken;
   return new Promise(res => {
@@ -117,7 +120,7 @@ function counterNum(counter){
   return raw;
 }
 
-/* ===== 預設廣播序列 ===== */
+/* ===== 預設廣播序列 Default announcement sequence ===== */
 function buildPhrase(lang, numLabel, counter){
   const letters = numLabel.replace(/[0-9]/g,'').split('');
   const digits  = numLabel.replace(/[A-Z]/g,'').split('');
@@ -134,7 +137,7 @@ function buildPhrase(lang, numLabel, counter){
           'zh/goto', ...cid.map(d=>'zh/'+d), 'zh/suffix'];
 }
 
-/* ===== 播放隊列 ===== */
+/* ===== 播放隊列 Playback queue ===== */
 async function announce(languages, opts, cancel){
   if (cancel) stopAudio();
   const my = announceToken;
