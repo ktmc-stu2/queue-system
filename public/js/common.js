@@ -51,18 +51,37 @@ async function takeTicket(){
   return t;
 }
 
-/* 叫下一位 */
+/* ================= 修改重點：叫下一位（自動完成當前號碼） ================= */
 async function callNext(id){
-  const w = waiting()[0]; if (!w) return null;
+  const updates = {};
+  
+  // 1. 自動完成當前正在服務的號碼 (例如 A008 -> done)
+  const cur = currentOf(id);
+  if (cur) {
+    updates['tickets/' + cur.key + '/status'] = 'done';
+  }
+
+  // 2. 檢查有沒有人排隊
+  const w = waiting()[0]; 
+  if (!w) {
+    // 如果沒有人排隊，但剛才完成了當前號碼，依然更新資料庫
+    if (Object.keys(updates).length > 0) {
+      await stateRef.update(updates);
+    }
+    return null;
+  }
+
+  // 3. 呼叫下一位
   const seq = await nextSeq('callSeq');
-  await stateRef.update({
-    ['tickets/'+w.key+'/status']: 'called',
-    ['tickets/'+w.key+'/counter']: Number(id),
-    ['tickets/'+w.key+'/calledAt']: Date.now(),
-    lastCall: { ticket:{label:w.label,no:w.no}, counter:Number(id), at:Date.now(), seq }
-  });
+  updates['tickets/' + w.key + '/status'] = 'called';
+  updates['tickets/' + w.key + '/counter'] = Number(id);
+  updates['tickets/' + w.key + '/calledAt'] = Date.now();
+  updates['lastCall'] = { ticket:{label:w.label,no:w.no}, counter:Number(id), at:Date.now(), seq };
+
+  await stateRef.update(updates);
   return w;
 }
+/* ======================================================================= */
 
 /* 重新呼叫 */
 async function recall(id){
@@ -78,13 +97,21 @@ async function recall(id){
 async function callNumber(id, raw){
   const num = Number(String(raw).toUpperCase().replace(/^[A-Z]+/,''));
   const t = ticketsArr().find(t=>t.no===num && t.status!=='done'); if (!t) return null;
+  
+  // 指定號碼呼叫時，同樣自動完成當前號碼
+  const updates = {};
+  const cur = currentOf(id);
+  if (cur) {
+    updates['tickets/' + cur.key + '/status'] = 'done';
+  }
+
   const seq = await nextSeq('callSeq');
-  await stateRef.update({
-    ['tickets/'+t.key+'/status']: 'called',
-    ['tickets/'+t.key+'/counter']: Number(id),
-    ['tickets/'+t.key+'/calledAt']: Date.now(),
-    lastCall: { ticket:{label:t.label,no:t.no}, counter:Number(id), at:Date.now(), seq }
-  });
+  updates['tickets/' + t.key + '/status'] = 'called';
+  updates['tickets/' + t.key + '/counter'] = Number(id);
+  updates['tickets/' + t.key + '/calledAt'] = Date.now();
+  updates['lastCall'] = { ticket:{label:t.label,no:t.no}, counter:Number(id), at:Date.now(), seq };
+  
+  await stateRef.update(updates);
   return t;
 }
 
