@@ -1,11 +1,11 @@
-<!doctype html><html lang="en"><head>
+<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin 管理</title><link rel="stylesheet" href="css/style.css">
 </head><body>
 <div id="lock" style="position:fixed; inset:0; background:linear-gradient(180deg,#f8fafc,#eef2f7); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px">
   <div class="card" style="max-width:380px; width:100%; text-align:center">
     <h3 style="border:none; padding:0">Admin Login 管理員登入</h3>
-    <p class="muted" style="margin:6px 0 12px">Password required 需要密碼先可操作</p>
+    <p class="muted" style="margin:6px 0 12px">Password required 需要密碼方可操作</p>
     <input type="password" id="pwInput" placeholder="Password 密碼">
     <button id="pwBtn" style="width:100%; margin-top:12px">Unlock 解鎖</button>
     <p id="pwErr" style="margin-top:8px; color:#dc2626; font-weight:600"></p>
@@ -17,12 +17,12 @@
     <h3>Session 時段</h3>
     <div class="row">
       <input id="prefixInput" placeholder="Prefix 前綴 e.g. A" style="max-width:160px">
-      <button id="btnSetPrefix">Set Prefix 設前綴</button>
-      <button id="btnAdvance" class="btn-amber">Advance Session 進下一時段</button>
+      <button id="btnSetPrefix">Set Prefix 設定前綴</button>
+      <button id="btnAdvance" class="btn-amber">Advance Session 進入下一時段</button>
     </div>
-    <label>Avg. minutes per ticket 平均每籌處理時間（分鐘）</label>
+    <label>Avg. minutes per ticket 平均每籌處理時間（分鐘 Minutes）</label>
     <input id="avgMinutes" type="number" min="1" value="3" style="max-width:140px">
-    <p class="muted" style="margin-top:6px">Numbers restart from 001 in each session. 每個時段由 001 重新開始。改完平均時間撳 Enter 自動儲存。</p>
+    <p class="muted" style="margin-top:6px">Numbers restart from 001 in each session. 每個時段由 001 重新開始。修改平均時間後按 Enter 鍵即可自動儲存。 Press Enter to save after changing the average time.</p>
   </div>
 
   <div class="card">
@@ -36,7 +36,7 @@
       <div id="nowPlaying" class="muted">Not playing 目前無播報</div>
     </div>
     <div class="row" style="margin-top:10px">
-      <button id="btnStopCur">Stop Current 停止正在播</button>
+      <button id="btnStopCur">Stop Current 停止目前播報</button>
       <button id="btnStopAll" style="background:linear-gradient(135deg,#ef4444,#b91c1c); box-shadow:0 4px 14px rgba(239,68,68,.35)">Stop All 全部停止</button>
     </div>
   </div>
@@ -54,27 +54,27 @@
   <div class="card">
     <h3>Announcement 廣播</h3>
     <div class="row">
-      <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="checkbox" id="langEn" style="width:auto"> English</label>
-      <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="checkbox" id="langYue" style="width:auto"> 粵語</label>
-      <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="checkbox" id="langZh" style="width:auto"> 普通話</label>
+      <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="checkbox" id="langEn" style="width:auto"> English 英語</label>
+      <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="checkbox" id="langYue" style="width:auto"> 粵語 Cantonese</label>
+      <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="checkbox" id="langZh" style="width:auto"> 普通話 Mandarin</label>
     </div>
     <label>Repeat 重複次數</label>
     <input id="ttsRepeat" type="number" min="1" max="5" value="1" style="max-width:100px">
-    <p class="muted" style="margin-top:6px">預設廣播詞：籌號＋號碼＋請往＋櫃位。音庫缺檔時自動用 TTS 補上。</p>
+    <p class="muted" style="margin-top:6px">預設廣播詞：籌號＋號碼＋請往＋櫃位。語音檔缺失時自動改用 TTS 補上。 Default script: ticket number + please go to counter. TTS is used automatically when an audio file is missing.</p>
     <div class="row" style="margin-top:12px">
       <button id="btnTest" class="btn-amber">Test 試播</button>
     </div>
   </div>
 
   <div class="card">
-    <h3>Screen Texts 屏幕文字</h3>
+    <h3>Screen Texts 顯示屏文字</h3>
     <label>Title 標題</label><input id="setTitle">
     <label>Subtitle 副標題</label><input id="setSubtitle">
     <label>Note 提示</label><input id="setNote">
   </div>
 
   <div class="card">
-    <h3>Print 小票紙張</h3>
+    <h3>Print 憑條紙張</h3>
     <div class="row">
       <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="radio" name="paper" id="paper80" value="80" style="width:auto"> 80mm</label>
       <label style="margin:0; display:flex; align-items:center; gap:6px"><input type="radio" name="paper" id="paper58" value="58" style="width:auto"> 58mm</label>
@@ -97,8 +97,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="js/config.js"></script><script src="js/common.js"></script><script src="js/tts.js"></script>
 <script>
-/* ===== 密碼保護 ===== */
-const ADMIN_PW = 'ktmc2026';   // ← 改你自己嘅密碼
+/* ===== 密碼保護 Password protection ===== */
+const ADMIN_PW = 'ktmc2026';   // ← 更改為您自己的密碼 Change to your own password
 (function(){
   const lock = document.getElementById('lock');
   if (sessionStorage.getItem('adminOk') === '1') lock.style.display = 'none';
@@ -118,7 +118,7 @@ const $ = id => document.getElementById(id);
 let loaded = false;
 function counters(){ return (STATE && STATE.settings && STATE.settings.counters) || []; }
 
-setTimeout(() => { if (!STATE) toast('⚠️ 無法載入資料：檢查網絡／Rules。Cannot load data.', 8000); }, 3000);
+setTimeout(() => { if (!STATE) toast('⚠️ 無法載入資料：檢查網絡／Rules。 Cannot load data: check network / Rules.', 8000); }, 3000);
 
 onState(s => {
   $('sessChip').textContent = `Session 時段 ${s.session.prefix} · Next 下一籌 ${s.session.prefix}${String(s.session.next).padStart(3,'0')}`;
@@ -150,12 +150,12 @@ onState(s => {
   }
 });
 
-/* ===== 手動播報 ===== */
+/* ===== 手動播報 Manual announcement ===== */
 $('btnManPlay').onclick = async () => {
   if (!guard()) return;
   const label = $('manLabel').value.trim().toUpperCase();
   const cid = $('manCounter').value;
-  if (!label || !cid) return toast('Please fill ticket & counter 請填寫號碼同櫃位');
+  if (!label || !cid) return toast('Please fill ticket & counter 請填寫號碼及櫃位');
   const seq = await nextSeq('callSeq');
   await stateRef.child('lastCall').set({
     ticket: { label, no: Number(label.replace(/\D/g,'')) || 0 },
@@ -177,7 +177,7 @@ $('btnStopAll').onclick = async () => {
   toast('All stopped 已全部停止');
 };
 
-/* ===== 清除籌號數據 ===== */
+/* ===== 清除籌號數據 Clear ticket data ===== */
 $('btnClearTickets').onclick = async () => {
   if (!guard()) return;
   if (!confirm('Clear ALL ticket data?\n清除所有籌號記錄？\n\nTickets, waiting queue, current broadcast will be removed.\n籌號、等候隊列、目前廣播會一併清除。\nNumbers restart from 001. 號碼由 001 重新開始。\n\nThis cannot be undone. 此操作無法復原。')) return;
@@ -225,7 +225,7 @@ $('btnAdvance').onclick = async () => {
   const np = cur.length === 1 ? String.fromCharCode(cur.charCodeAt(0) + 1) : cur + 'A';
   if (!confirm(`Advance to Session ${np}?\n進入時段 ${np}？\nNumbers will restart from 001. 號碼將由 001 重新開始。`)) return;
   await advance();
-  toast('Advanced 已進下一時段');
+  toast('Advanced 已進入下一時段');
 };
 function getLangs(){ return ['en','yue','zh'].filter(l => ({en:$('langEn'), yue:$('langYue'), zh:$('langZh')})[l].checked); }
 $('btnTest').onclick = () => {
